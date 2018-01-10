@@ -10,6 +10,7 @@ given a CFG (in almost-CNF) and a sentence.
 import sys
 import os.path
 from node import Node
+import re
 
 def parser(grammar_filename, sentence):
 	"""
@@ -153,18 +154,22 @@ def getGrammar(grammar_filename):
 			# Right hand side needs to contain one or two elements.
 			# If two elements: neither can start with lower letter.
 			# If one element: can start with lower letter.
-			right_side = rule[1].split()
-			if (len(right_side) > 2) or (len(right_side) == 0):
-				printError(1)
-			elif len(right_side) == 2:
-				# print(right_side)
-				if right_side[0][0] == right_side[0][0].lower():
+			if re.match(r'|',rule[1]):
+				right_side = rule[1].split('|')
+				right_side = [[x] for x in right_side]
+			else:
+				right_side = rule[1].split()
+				if (len(right_side) > 2) or (len(right_side) == 0):
 					printError(1)
-				elif right_side[1][0] == right_side[1][0].lower():
-					printError(1)
-			# else: # len(right_side) == 1
-			# 	if right_side[0][0] == right_side[0][0].lower():
-			# 		printError(1)
+				elif len(right_side) == 2:
+					# print(right_side)
+					if right_side[0][0] == right_side[0][0].lower():
+						printError(1)
+					elif right_side[1][0] == right_side[1][0].lower():
+						printError(1)
+				# else: # len(right_side) == 1
+				# 	if right_side[0][0] == right_side[0][0].lower():
+				# 		printError(1)
 
 			# Left hand side can only contain one element and that element
 			# needs to be uppercase for the first letter.
@@ -179,11 +184,11 @@ def getGrammar(grammar_filename):
 				if right_side in grammar[rule[0]]:
 					printError(1)
 				else:
-					grammar[rule[0]].append(right_side)
+					grammar[rule[0]] += right_side
 			# If we have not seen a derivation before we need to add it to
 			# the dictionary.
 			else:
-				grammar[rule[0]] = [right_side]
+				grammar[rule[0]] = right_side
 
 	return grammar
 
@@ -201,7 +206,7 @@ def printError(num):
 	else:
 		print('Error.')
 
-	print('Usage: $ python3 parser.py <filename for grammar> <sentence>')
+	print('Usage: $ python3 parser.py <filename for grammar> <sentence>') 
 
 def main():
 	if len(sys.argv) != 3:
